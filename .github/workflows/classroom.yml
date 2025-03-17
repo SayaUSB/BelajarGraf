@@ -17,6 +17,13 @@ jobs:
       id: python-test
       uses: classroom-resources/autograding-python-grader@v1
       with:
+        setup-command: |
+            python -m pip install --upgrade pip
+            python -m pip install pytest
+            python -m pip install networkx
+            python -m pip install matplotlib
+            python -m pip install numpy
+        test-command: pytest test.py -v
         timeout: 10
         max-score: 20
         setup-command: pip install pytest
