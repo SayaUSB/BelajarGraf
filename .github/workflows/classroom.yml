@@ -1,35 +1,53 @@
 name: Autograding Tests
-'on':
-- push
-- repository_dispatch
+
+on:
+  # Trigger workflow saat push dan pull request di branch master
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  # Untuk pemicu lain (mis. repository_dispatch), bisa ditambahkan di sini
+  repository_dispatch:
+
 permissions:
   checks: write
   actions: read
   contents: read
+
 jobs:
   run-autograding-tests:
     runs-on: ubuntu-latest
+    
+    # Ini supaya tidak bentrok dengan GitHub Classroom bot
     if: github.actor != 'github-classroom[bot]'
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Python Test
-      id: python-test
-      uses: classroom-resources/autograding-python-grader@v1
-      with:
-        setup-command: |
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Python Test
+        id: python-test
+        uses: classroom-resources/autograding-python-grader@v1
+        with:
+          # Perintah instalasi library yang dibutuhkan
+          setup-command: |
             python -m pip install --upgrade pip
             python -m pip install pytest
             python -m pip install networkx
             python -m pip install matplotlib
             python -m pip install numpy
-        test-command: pytest test.py -v
-        timeout: 10
-        max-score: 20
-        setup-command: pip install pytest
-    - name: Autograding Reporter
-      uses: classroom-resources/autograding-grading-reporter@v1
-      env:
-        PYTHON-TEST_RESULTS: "${{steps.python-test.outputs.result}}"
-      with:
-        runners: python-test
+          # Perintah untuk menjalankan tes
+          test-command: pytest test.py -v
+          # Skor maksimal
+          max-score: 20
+          # Batas waktu (detik)
+          timeout: 10
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          # Mengambil hasil dari step 'python-test'
+          PYTHON-TEST_RESULTS: "${{ steps.python-test.outputs.result }}"
+        with:
+          # Runner di sini menyesuaikan 'id' dari step sebelumnya
+          runners: python-test
